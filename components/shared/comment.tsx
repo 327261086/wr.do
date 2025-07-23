@@ -12,14 +12,14 @@ export default function TwikooComment() {
   useEffect(() => {
     const cdnScript = document.createElement("script");
     cdnScript.src =
-      "https://cdn.staticfile.org/twikoo/1.6.32/twikoo.all.min.js";
+      "https://cdn.jsdelivr.net/npm/twikoo@1.6.44/dist/twikoo.min.js";
     cdnScript.async = true;
 
     const loadSecondScript = () => {
       const initScript = document.createElement("script");
       initScript.innerHTML = `
         twikoo.init({
-          envId: "https://comment.oiov.dev",
+          envId: "https://twikoo.qfxw.us.kg/",
           el: '#twikoo-comment',
           pageSize: 10,
           includeReply: true,
