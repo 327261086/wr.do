@@ -35,6 +35,8 @@ export default function AppConfigs({}: {}) {
   } = useSWR<Record<string, any>>("/api/admin/configs", fetcher);
   const [notification, setNotification] = useState("");
   const [catchAllEmails, setCatchAllEmails] = useState("");
+  const [forwardEmailTargets, setForwardEmailTargets] = useState("");
+  const [forwardEmailWhiteList, setForwardEmailWhiteList] = useState("");
   const [emailSuffix, setEmailSuffix] = useState("");
   const [tgBotToken, setTgBotToken] = useState("");
   const [tgChatId, setTgChatId] = useState("");
@@ -52,14 +54,16 @@ export default function AppConfigs({}: {}) {
       setTgChatId(configs?.tg_email_chat_id);
       setTgTemplate(configs?.tg_email_template);
       setTgWhiteList(configs?.tg_email_target_white_list);
+      setForwardEmailTargets(configs?.email_forward_targets);
+      setForwardEmailWhiteList(configs?.email_forward_white_list);
     }
-    // 计算登录方式数量
+
     if (!isLoading) {
       let count = 0;
       if (configs?.enable_google_oauth) count++;
       if (configs?.enable_github_oauth) count++;
       if (configs?.enable_liunxdo_oauth) count++;
-      if (configs?.enable_resend_email_login) count++;
+      // if (configs?.enable_resend_email_login) count++;
       if (configs?.enable_email_password_login) count++;
       setLoginMethodCount(count);
     }
@@ -88,7 +92,7 @@ export default function AppConfigs({}: {}) {
 
   return (
     <Card>
-      <Collapsible className="group">
+      <Collapsible className="group" defaultOpen>
         <CollapsibleTrigger className="flex w-full items-center justify-between bg-neutral-50 px-4 py-5 dark:bg-neutral-900">
           <div className="text-lg font-bold">{t("App Configs")}</div>
           <Icons.chevronDown className="ml-auto size-4" />
@@ -129,62 +133,7 @@ export default function AppConfigs({}: {}) {
               <CollapsibleContent className="mt-2 space-y-3 rounded-md bg-neutral-100 p-3 dark:bg-neutral-800">
                 {configs && (
                   <>
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="flex items-center gap-2 text-sm">
-                        <Icons.github className="size-4" /> GitHub OAuth
-                      </p>
-                      <Switch
-                        defaultChecked={configs.enable_github_oauth}
-                        onCheckedChange={(v) =>
-                          handleChange(v, "enable_github_oauth", "BOOLEAN")
-                        }
-                      />
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="flex items-center gap-2 text-sm">
-                        <Icons.google className="size-4" />
-                        Google OAuth
-                      </p>
-                      <Switch
-                        defaultChecked={configs.enable_google_oauth}
-                        onCheckedChange={(v) =>
-                          handleChange(v, "enable_google_oauth", "BOOLEAN")
-                        }
-                      />
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="flex items-center gap-2 text-sm">
-                        <img
-                          src="/_static/images/linuxdo.webp"
-                          alt="linuxdo"
-                          className="size-4"
-                        />
-                        LinuxDo OAuth
-                      </p>
-                      <Switch
-                        defaultChecked={configs.enable_liunxdo_oauth}
-                        onCheckedChange={(v) =>
-                          handleChange(v, "enable_liunxdo_oauth", "BOOLEAN")
-                        }
-                      />
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="flex items-center gap-2 text-sm">
-                        <Icons.resend className="size-4" />
-                        {t("Resend Email")}
-                      </p>
-                      <Switch
-                        defaultChecked={configs.enable_resend_email_login}
-                        onCheckedChange={(v) =>
-                          handleChange(
-                            v,
-                            "enable_resend_email_login",
-                            "BOOLEAN",
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center justify-between gap-3 transition-all duration-100 hover:cursor-pointer hover:shadow-sm">
                       <p className="flex items-center gap-2 text-sm">
                         <Icons.pwdKey className="size-4" />
                         {t("Email Password")}
@@ -200,6 +149,61 @@ export default function AppConfigs({}: {}) {
                         }
                       />
                     </div>
+                    <div className="flex items-center justify-between gap-3 transition-all duration-100 hover:cursor-pointer hover:shadow-sm">
+                      <p className="flex items-center gap-2 text-sm">
+                        <Icons.github className="size-4" /> GitHub OAuth
+                      </p>
+                      <Switch
+                        defaultChecked={configs.enable_github_oauth}
+                        onCheckedChange={(v) =>
+                          handleChange(v, "enable_github_oauth", "BOOLEAN")
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center justify-between gap-3 transition-all duration-100 hover:cursor-pointer hover:shadow-sm">
+                      <p className="flex items-center gap-2 text-sm">
+                        <Icons.google className="size-4" />
+                        Google OAuth
+                      </p>
+                      <Switch
+                        defaultChecked={configs.enable_google_oauth}
+                        onCheckedChange={(v) =>
+                          handleChange(v, "enable_google_oauth", "BOOLEAN")
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center justify-between gap-3 transition-all duration-100 hover:cursor-pointer hover:shadow-sm">
+                      <p className="flex items-center gap-2 text-sm">
+                        <img
+                          src="/_static/images/linuxdo.webp"
+                          alt="linuxdo"
+                          className="size-4"
+                        />
+                        LinuxDo OAuth
+                      </p>
+                      <Switch
+                        defaultChecked={configs.enable_liunxdo_oauth}
+                        onCheckedChange={(v) =>
+                          handleChange(v, "enable_liunxdo_oauth", "BOOLEAN")
+                        }
+                      />
+                    </div>
+                    {/* <div className="flex items-center justify-between gap-3">
+                      <p className="flex items-center gap-2 text-sm">
+                        <Icons.resend className="size-4" />
+                        {t("Resend Email")}
+                      </p>
+                      <Switch
+                        defaultChecked={configs.enable_resend_email_login}
+                        onCheckedChange={(v) =>
+                          handleChange(
+                            v,
+                            "enable_resend_email_login",
+                            "BOOLEAN",
+                          )
+                        }
+                      />
+                    </div> */}
                   </>
                 )}
               </CollapsibleContent>
@@ -304,8 +308,8 @@ export default function AppConfigs({}: {}) {
               {configs && (
                 <div className="flex w-full items-start gap-2">
                   <Textarea
-                    className="h-16 max-h-32 min-h-9 resize-y bg-white"
-                    placeholder="Support HTML format, such as <div>info</div>"
+                    className="h-16 max-h-32 min-h-9 resize-y bg-white dark:bg-neutral-700"
+                    placeholder="Support HTML format, such as <div class='text-red-500'>Info</div>"
                     rows={5}
                     // defaultValue={configs.system_notification}
                     value={notification}
@@ -365,7 +369,7 @@ export default function AppConfigs({}: {}) {
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-3 bg-neutral-100 p-4 dark:bg-neutral-800">
           <div className="space-y-6">
-            {/* Catch-All */}
+            {/* Catch-All*/}
             <Collapsible>
               <CollapsibleTrigger className="flex w-full items-center justify-between space-x-2">
                 <div className="space-y-1 leading-none">
@@ -405,6 +409,48 @@ export default function AppConfigs({}: {}) {
                 <div className="flex flex-col items-start justify-start gap-3">
                   <div className="space-y-1 leading-none">
                     <p className="font-medium">
+                      {t("Email Forward White List")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t(
+                        "Set email forward white list, split by comma, such as: a-wrdo,b-wrdo",
+                      )}
+                    </p>
+                  </div>
+                  {configs && (
+                    <div className="flex w-full items-start gap-2">
+                      <Textarea
+                        className="h-16 max-h-32 min-h-9 resize-y bg-white dark:bg-neutral-700"
+                        placeholder="example1@wr.do,example2@wr.do"
+                        rows={5}
+                        value={forwardEmailWhiteList}
+                        onChange={(e) =>
+                          setForwardEmailWhiteList(e.target.value)
+                        }
+                      />
+                      <Button
+                        className="h-9 text-nowrap"
+                        disabled={
+                          isPending ||
+                          forwardEmailWhiteList ===
+                            configs.email_forward_white_list
+                        }
+                        onClick={() =>
+                          handleChange(
+                            forwardEmailWhiteList,
+                            "email_forward_white_list",
+                            "STRING",
+                          )
+                        }
+                      >
+                        {t("Save")}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col items-start justify-start gap-3">
+                  <div className="space-y-1 leading-none">
+                    <p className="font-medium">
                       {t("Catch-All Email Address")}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -419,7 +465,6 @@ export default function AppConfigs({}: {}) {
                         className="h-16 max-h-32 min-h-9 resize-y bg-white dark:bg-neutral-700"
                         placeholder="example1@wr.do,example2@wr.do"
                         rows={5}
-                        // defaultValue={configs.catch_all_emails}
                         value={catchAllEmails}
                         disabled={!configs.enable_email_catch_all}
                         onChange={(e) => setCatchAllEmails(e.target.value)}
@@ -434,6 +479,124 @@ export default function AppConfigs({}: {}) {
                           handleChange(
                             catchAllEmails,
                             "catch_all_emails",
+                            "STRING",
+                          )
+                        }
+                      >
+                        {t("Save")}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+            {/* Forward Email to other email address */}
+            <Collapsible>
+              <CollapsibleTrigger className="flex w-full items-center justify-between space-x-2">
+                <div className="space-y-1 leading-none">
+                  <p className="flex items-center gap-2 font-medium">
+                    {t("Email Forwarding")}
+                  </p>
+                  <p className="text-start text-xs text-muted-foreground">
+                    {t(
+                      "If enabled, forward all received emails to other platform email addresses (Send with Resend or Brevo)",
+                    )}
+                  </p>
+                </div>
+                {configs && (
+                  <div
+                    className="ml-auto flex items-center gap-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {configs.enable_email_forward &&
+                      !configs.email_forward_targets && (
+                        <Badge variant="yellow">
+                          <Icons.warning className="mr-1 size-3" />{" "}
+                          {t("Need to configure")}
+                        </Badge>
+                      )}
+                    <Switch
+                      defaultChecked={configs.enable_email_forward}
+                      onCheckedChange={(v) =>
+                        handleChange(v, "enable_email_forward", "BOOLEAN")
+                      }
+                    />
+                    <Icons.chevronDown className="size-4" />
+                  </div>
+                )}
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-4 space-y-4 rounded-md border p-4 shadow-md">
+                <div className="flex flex-col items-start justify-start gap-3">
+                  <div className="space-y-1 leading-none">
+                    <p className="font-medium">
+                      {t("Email Forward White List")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t(
+                        "Set email forward white list, split by comma, such as: a-wrdo,b-wrdo",
+                      )}
+                    </p>
+                  </div>
+                  {configs && (
+                    <div className="flex w-full items-start gap-2">
+                      <Textarea
+                        className="h-16 max-h-32 min-h-9 resize-y bg-white dark:bg-neutral-700"
+                        placeholder="example1@wr.do,example2@wr.do"
+                        rows={5}
+                        value={forwardEmailWhiteList}
+                        onChange={(e) =>
+                          setForwardEmailWhiteList(e.target.value)
+                        }
+                      />
+                      <Button
+                        className="h-9 text-nowrap"
+                        disabled={
+                          isPending ||
+                          forwardEmailWhiteList ===
+                            configs.email_forward_white_list
+                        }
+                        onClick={() =>
+                          handleChange(
+                            forwardEmailWhiteList,
+                            "email_forward_white_list",
+                            "STRING",
+                          )
+                        }
+                      >
+                        {t("Save")}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col items-start justify-start gap-3">
+                  <div className="space-y-1 leading-none">
+                    <p className="font-medium">{t("Forward Email Targets")}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t(
+                        "Set forward email address targets, split by comma if more than one, such as: 1@a-com,2@b-com, Only works when email forwarding is enabled",
+                      )}
+                    </p>
+                  </div>
+                  {configs && (
+                    <div className="flex w-full items-start gap-2">
+                      <Textarea
+                        className="h-16 max-h-32 min-h-9 resize-y bg-white dark:bg-neutral-700"
+                        placeholder="example1@wr.do,example2@wr.do"
+                        rows={5}
+                        value={forwardEmailTargets}
+                        disabled={!configs.enable_email_forward}
+                        onChange={(e) => setForwardEmailTargets(e.target.value)}
+                      />
+                      <Button
+                        className="h-9 text-nowrap"
+                        disabled={
+                          isPending ||
+                          forwardEmailTargets === configs.email_forward_targets
+                        }
+                        onClick={() =>
+                          handleChange(
+                            forwardEmailTargets,
+                            "email_forward_targets",
                             "STRING",
                           )
                         }
@@ -677,6 +840,7 @@ export default function AppConfigs({}: {}) {
                   {t(
                     "Send email notifications for subdomain application status updates; Notifies administrators when users submit applications and notifies users of approval results; Only available when subdomain application mode is enabled",
                   )}
+                  . (Brevo)
                 </p>
               </div>
               {configs && (

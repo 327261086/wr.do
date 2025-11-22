@@ -20,7 +20,7 @@ import {
   getRegionName,
 } from "@/lib/contries";
 import { DATE_DIMENSION_ENUMS } from "@/lib/enums";
-import { fetcher, isLink, removeUrlSuffix } from "@/lib/utils";
+import { fetcher, isLink, removeUrlPrefix } from "@/lib/utils";
 import { useElementSize } from "@/hooks/use-element-size";
 import { Button } from "@/components/ui/button";
 import {
@@ -195,10 +195,10 @@ export function DailyPVUVChart({
   const latestEntry = data[data.length - 1];
   const latestFrom = [
     latestEntry.city ? decodeURIComponent(latestEntry.city) : "",
-    latestEntry.country ? `(${getCountryName(latestEntry.country)})` : "",
+    latestEntry.country ? `${getCountryName(latestEntry.country)}` : "",
   ]
     .filter(Boolean)
-    .join(" ");
+    .join(",");
 
   // const pointData = data.map((item) => ({
   //   id: item.id,
@@ -532,7 +532,7 @@ export function StatsList({ data, title }: { data: Stat[]; title: string }) {
                   href={ref.dimension}
                   target="_blank"
                 >
-                  {removeUrlSuffix(ref.dimension)}
+                  {removeUrlPrefix(ref.dimension)}
                 </Link>
               ) : (
                 <p className="font-medium">

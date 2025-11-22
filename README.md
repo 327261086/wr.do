@@ -3,7 +3,7 @@
   <h1>WR.DO</h1>
   <p>一站式域名服务平台，集成短链服务、临时邮箱、子域名管理、文件存储和开放API接口。</p>
   <p>
-    <a href="https://wr.do">官网</a> · <a href="https://wr.do/docs/developer">部署文档</a> · <a href="https://wr.do/feedback">反馈讨论</a> · <a href="/README-en.md">English</a> | 简体中文
+    <a href="https://wr.do">官方云部署站点</a> · <a href="https://wr.do/docs/developer">部署文档</a> · <a href="https://wr.do/feedback">反馈讨论</a> · <a href="/README-en.md">English</a> | 简体中文
   </p>
   <img alt="Vercel" src="https://img.shields.io/badge/vercel-online-55b467?labelColor=black&logo=vercel&style=flat-square">
   <img alt="Release" src="https://img.shields.io/github/actions/workflow/status/oiov/wr.do/docker-build-push.yml?label=release&labelColor=black&logo=githubactions&logoColor=white&style=flat-square">
@@ -14,7 +14,8 @@
   <img alt="GitHub forks" src="https://img.shields.io/github/forks/oiov/wr.do?style=flat-square">
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/oiov/wr.do?style=flat-square"> <br>
   <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/oiov/wr.do/docker-build-push.yml?style=flat-square">
-	<img src="https://img.shields.io/github/license/oiov/wr.do?style=flat-square" alt="MIT"/>
+	<img src="https://img.shields.io/github/license/oiov/wr.do?style=flat-square" alt="MIT"/><br><br>
+  <img width="15" src="https://storage.wr.do/2025/11/20/561763627504_.pic.jpg" /> 免费体验 Sora AI 视频生成 👉 <a href="https://sora.hk/i/5KY5N1FL">点击注册</a>
 </div>
 
 ## 截图预览
@@ -36,8 +37,6 @@
 
 
 ## 功能列表
-
-> Demo: [https://699399.xyz](https://699399.xyz) (管理员账号: `admin@admin.com`, 密码: `123456`)
 
 <details>
 <summary><strong> 🔗 短链服务</strong> - <a href="javascript:;">[功能列表]</a></summary>
@@ -214,7 +213,20 @@ pnpm dev
 - Discord: https://discord.gg/AHPQYuZu3m
 - 微信群：
 
-<img width="300" src="https://wr.do/s/group" />
+<img width="300" src="https://wr.do/group" />
+
+## 贡献者
+
+<a href="https://github.com/oiov/wr.do/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=oiov/wr.do" />
+</a>
+
+## 请作者喝咖啡
+  
+[爱发电主页打赏](wr.do/afdhome)
+
+<img width="100" src="https://wr.do/bbpt9z?ref=https://github.com/oiov/wr.do" />
+
 
 ## Star History
 
@@ -229,3 +241,4 @@ pnpm dev
 ## 开源协议
 
 [MIT](/LICENSE.md)
+

@@ -45,6 +45,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "wr.do",
       },
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+      },
     ],
   },
   experimental: {
@@ -57,7 +61,7 @@ const nextConfig = {
     return [
       {
         source: "/logo.png",
-        destination: "/_static/logo.png",
+        destination: "/_static/logo-192.png",
       },
     ];
   },
@@ -74,43 +78,8 @@ const nextConfig = {
         permanent: true,
       },
       {
-        source: "/0",
-        destination: "https://wr.do/s/0",
-        permanent: true,
-      },
-      {
-        source: "/9",
-        destination: "https://wr.do/s/9",
-        permanent: true,
-      },
-      {
-        source: "/ai",
-        destination: "https://wr.do/s/ai?ref=wrdo",
-        permanent: true,
-      },
-      {
-        source: "/cps",
-        destination: "https://wr.do/s/cps",
-        permanent: true,
-      },
-      {
         source: "/x",
         destination: "https://wr.do/s/x",
-        permanent: true,
-      },
-      {
-        source: "/solo",
-        destination: "https://wr.do/s/solo",
-        permanent: true,
-      },
-      {
-        source: "/rmbg",
-        destination: "https://wr.do/s/rmbg",
-        permanent: true,
-      },
-      {
-        source: "/llk",
-        destination: "https://wr.do/s/llk",
         permanent: true,
       },
     ];

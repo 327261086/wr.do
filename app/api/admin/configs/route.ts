@@ -34,6 +34,9 @@ export async function GET(req: NextRequest) {
       "enable_email_registration_suffix_limit",
       "email_registration_suffix_limit_white_list",
       "enable_subdomain_status_email_pusher",
+      "enable_email_forward",
+      "email_forward_targets",
+      "email_forward_white_list",
     ]);
 
     return Response.json(configs, { status: 200 });

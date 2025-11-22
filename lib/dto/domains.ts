@@ -16,7 +16,9 @@ export interface DomainConfig {
   cf_email: string | null;
   cf_record_types: string;
   cf_api_key_encrypted: boolean;
+  email_provider: string;
   resend_api_key: string | null;
+  brevo_api_key: string | null;
   min_url_length: number;
   min_email_length: number;
   min_record_length: number;
@@ -118,17 +120,43 @@ export async function getDomainByName(domain_name: string) {
   });
 }
 
-export async function checkDomainIsConfiguratedResend(domain_name: string) {
+export async function checkDomainIsConfiguratedEmailProvider(
+  domain_name: string,
+) {
   try {
     const domain = await prisma.domain.findUnique({
       where: { domain_name },
       select: {
+        email_provider: true,
         resend_api_key: true,
+        brevo_api_key: true,
       },
     });
-    return domain?.resend_api_key;
+    if (domain?.email_provider === "Resend")
+      return { email_key: domain?.resend_api_key, provider: "Resend" };
+    if (domain?.email_provider === "Brevo")
+      return { email_key: domain?.brevo_api_key, provider: "Brevo" };
+    return { email_key: null, provider: null };
   } catch (error) {
     throw new Error(`Failed to fetch domain config: ${error.message}`);
+  }
+}
+
+export async function getConfiguredEmailDomains() {
+  try {
+    const domains = await prisma.domain.findMany({
+      where: { email_provider: "Brevo" },
+      select: {
+        domain_name: true,
+        brevo_api_key: true,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+    });
+    return domains;
+  } catch (error) {
+    return [];
   }
 }
 

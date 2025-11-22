@@ -18,6 +18,10 @@ export interface ShortUrlFormData {
   password: string;
   createdAt?: Date;
   updatedAt?: Date;
+  user?: {
+    name: string;
+    email: string;
+  };
 }
 
 export interface UserShortUrlInfo extends ShortUrlFormData {
@@ -66,6 +70,14 @@ export async function getUserShortUrls(
       where: option,
       skip: (page - 1) * size,
       take: size,
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
       orderBy: {
         updatedAt: "desc",
       },
@@ -124,12 +136,12 @@ export async function getUserShortUrlCount(
   }
 }
 
-export async function getUserShortLinksByIds(ids: string[], userId: string) {
+export async function getUserShortLinksByIds(ids: string[], userId?: string) {
   try {
     return await prisma.userUrl.findMany({
       where: {
         id: { in: ids },
-        userId,
+        ...(userId && { userId }),
       },
     });
   } catch (error) {
@@ -285,6 +297,34 @@ export async function updateUserShortUrl(data: ShortUrlFormData) {
         userId: data.userId,
       },
       data: {
+        target: data.target,
+        url: data.url,
+        visible: data.visible,
+        prefix: data.prefix,
+        // active: data.active,
+        expiration: data.expiration,
+        password: data.password,
+        updatedAt: new Date().toISOString(),
+      },
+    });
+    return { status: "success", data: res };
+  } catch (error) {
+    return { status: error };
+  }
+}
+
+export async function updateUserShortUrlAdmin(
+  data: ShortUrlFormData,
+  newUserId,
+) {
+  try {
+    const res = await prisma.userUrl.update({
+      where: {
+        id: data.id,
+        userId: data.userId,
+      },
+      data: {
+        userId: newUserId,
         target: data.target,
         url: data.url,
         visible: data.visible,

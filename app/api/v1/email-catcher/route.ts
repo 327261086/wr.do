@@ -1,5 +1,7 @@
+import { getConfiguredEmailDomains } from "@/lib/dto/domains";
 import { OriginalEmail, saveForwardEmail } from "@/lib/dto/email";
 import { getMultipleConfigs } from "@/lib/dto/system-config";
+import { brevoSendEmail } from "@/lib/email/brevo";
 
 export async function POST(req: Request) {
   try {
@@ -16,27 +18,13 @@ export async function POST(req: Request) {
       "tg_email_chat_id",
       "tg_email_template",
       "tg_email_target_white_list",
+      "enable_email_forward",
+      "email_forward_targets",
+      "email_forward_white_list",
     ]);
 
-    // Catch-all
-    if (configs.enable_email_catch_all) {
-      const validEmails = parseAndValidateEmails(configs.catch_all_emails);
-
-      if (validEmails.length === 0) {
-        return Response.json(
-          { error: "No valid catch-all emails configured" },
-          { status: 400 },
-        );
-      }
-
-      const forwardPromises = validEmails.map((email) =>
-        saveForwardEmail({ ...data, to: email }),
-      );
-
-      await Promise.all(forwardPromises);
-    } else {
-      await saveForwardEmail(data);
-    }
+    // 处理邮件转发和保存
+    await handleEmailForwarding(data, configs);
 
     // Telegram
     if (configs.enable_tg_email_push) {
@@ -54,6 +42,122 @@ export async function POST(req: Request) {
     console.log(error);
     return Response.json({ status: 500 });
   }
+}
+
+async function handleEmailForwarding(data: OriginalEmail, configs: any) {
+  const actions = determineEmailActions(data, configs);
+
+  const promises: Promise<void>[] = [];
+
+  if (actions.includes("CATCH_ALL")) {
+    promises.push(handleCatchAllEmail(data, configs));
+  }
+
+  if (actions.includes("EXTERNAL_FORWARD")) {
+    promises.push(handleExternalForward(data, configs));
+  }
+
+  if (actions.includes("NORMAL_SAVE")) {
+    promises.push(handleNormalEmail(data));
+  }
+
+  // 并行执行所有操作
+  const results = await Promise.allSettled(promises);
+
+  // 检查是否有失败的操作
+  const failures = results.filter((result) => result.status === "rejected");
+  if (failures.length > 0) {
+    console.error("Some email operations failed:", failures);
+    const firstFailure = failures[0] as PromiseRejectedResult;
+    throw new Error(`Email operation failed: ${firstFailure.reason}`);
+  }
+}
+
+function determineEmailActions(data: OriginalEmail, configs: any): string[] {
+  const actions: string[] = [];
+
+  // 检查转发白名单
+  const isInForwardWhiteList = checkForwardWhiteList(
+    data.to,
+    configs.email_forward_white_list,
+  );
+
+  // 检查是否配置了任何转发功能并且在白名单中
+  const hasCatchAllForward =
+    configs.enable_email_catch_all && isInForwardWhiteList;
+  const hasExternalForward =
+    configs.enable_email_forward && isInForwardWhiteList;
+  const hasAnyForward = hasCatchAllForward || hasExternalForward;
+
+  if (hasCatchAllForward) {
+    actions.push("CATCH_ALL");
+  }
+
+  if (hasExternalForward) {
+    actions.push("EXTERNAL_FORWARD");
+  }
+
+  // 只有在没有配置任何转发时，才进行正常保存原始邮件
+  if (!hasAnyForward) {
+    actions.push("NORMAL_SAVE");
+  }
+
+  return actions;
+}
+
+// 新增：检查邮箱是否在转发白名单中
+function checkForwardWhiteList(
+  toEmail: string,
+  whiteListString: string,
+): boolean {
+  // 如果没有配置白名单，则允许所有邮箱（保持向后兼容）
+  if (!whiteListString || whiteListString.trim() === "") {
+    return true;
+  }
+
+  const whiteList = parseAndValidateEmails(whiteListString);
+  return whiteList.includes(toEmail);
+}
+
+async function handleCatchAllEmail(data: OriginalEmail, configs: any) {
+  const validEmails = parseAndValidateEmails(configs.catch_all_emails);
+
+  if (validEmails.length === 0) {
+    throw new Error("No valid catch-all emails configured");
+  }
+
+  // 转发到内部邮箱（保存转发后的邮件）
+  const forwardPromises = validEmails.map((email) =>
+    saveForwardEmail({ ...data, to: email }),
+  );
+
+  await Promise.all(forwardPromises);
+}
+
+async function handleExternalForward(data: OriginalEmail, configs: any) {
+  const validEmails = parseAndValidateEmails(configs.email_forward_targets);
+
+  if (validEmails.length === 0) {
+    throw new Error("No valid forward emails configured");
+  }
+
+  const senders = await getConfiguredEmailDomains();
+  if (senders.length === 0) {
+    throw new Error("No configured resend domains");
+  }
+
+  const options = {
+    from: `Forwarding@${senders[0].domain_name}`,
+    to: validEmails,
+    subject: data.subject ?? "No subject",
+    html: `${data.html ?? data.text} <br><hr><p style="font-size: '12px'; color: '#888'; font-family: 'monospace';text-align: 'center'">This email was forwarded from ${data.to}. Powered by <a href="https://wr.do">WR.DO</a>.</p>`,
+  };
+
+  await brevoSendEmail(options);
+}
+
+async function handleNormalEmail(data: OriginalEmail) {
+  await saveForwardEmail(data);
 }
 
 function isValidEmail(email: string): boolean {
@@ -184,29 +288,29 @@ function formatEmailForTelegram(
       .replace("{{from}}", fromInfo)
       .replace("{{to}}", email.to)
       .replace("{{subject}}", email.subject || "No Subject")
-      .replace("{{text}}", email.text || "No content")
-      .replace("{{date}}", email.date || "--");
+      .replace("{{text}}", email.html || email.text || "No Content")
+      .replace("{{date}}", new Date(email.date || "").toLocaleString() || "--");
   }
 
   const subject = email.subject || "No Subject";
   const content =
-    email.text || email.html?.replace(/<[^>]*>/g, "") || "No content";
+    email.text || email.html?.replace(/<[^>]*>/g, "") || "No Content";
 
-  const date = email.date || "Unknown date";
+  const date = new Date(email.date || "").toLocaleString() || "--";
 
   // 限制内容长度
-  const maxContentLength = 2000;
+  const maxContentLength = 3800; // Maximum Telegram message length is 4096
   const truncatedContent =
     content.length > maxContentLength
       ? content.substring(0, maxContentLength) + "..."
       : content;
 
-  let message = `📧 *New Email*\n\n`;
+  let message = `📮 *New Email*\n\n`;
   message += `*From:* \`${fromInfo}\`\n`;
   message += `*To:* \`${email.to}\`\n`;
   message += `*Subject:* ${subject}\n`;
-  message += `*Date:* ${date}\n`;
-  message += `\n\`\`\`Content\n${truncatedContent}\n\`\`\``;
+  message += `*Date:* ${new Date(date).toLocaleString()}\n`;
+  message += `*Content:* \n${truncatedContent}`;
 
   return message;
 }

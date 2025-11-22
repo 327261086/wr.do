@@ -2,13 +2,12 @@ import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
-import { DashboardHeader } from "@/components/dashboard/header";
 
 import UserUrlsList from "./url-list";
 
 export const metadata = constructMetadata({
-  title: "Short URLs",
-  description: "List and manage records.",
+  title: "Links",
+  description: "List and manage short links.",
 });
 
 export default async function DashboardPage() {
@@ -18,12 +17,6 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <DashboardHeader
-        heading="Manage Short URLs"
-        text="List and manage short urls"
-        link="/docs/short-urls"
-        linkText="short urls"
-      />
       <UserUrlsList
         user={{
           id: user.id,
